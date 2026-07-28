@@ -7,7 +7,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 const TRIAL = null; // ['世田谷区'] のように絞ると試作モード
 
 const PREFS = JSON.parse(readFileSync(new URL('../src/prefs.json', import.meta.url), 'utf8'));
-const ORIGIN = 'https://kosodate.pint-home.com';
+const ORIGIN = 'https://clababy.com';
 
 // ---- よみがな（ひらがな）→ ヘボン式ローマ字（スラッグ用の簡易版） ----
 const DIGRAPH = {

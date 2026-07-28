@@ -4,7 +4,10 @@
 import PREFS from './prefs.json' with { type: 'json' };
 
 const PREFS_BODY = JSON.stringify(PREFS);
-const ALLOWED_ORIGINS = ['https://kosodate.pint-home.com'];
+const CANONICAL_HOST = 'clababy.com';
+// 旧ドメイン。SEO評価の引き継ぎのため301で新ドメインへ転送する（ルートは残し続けること）
+const LEGACY_HOSTS = ['kosodate.pint-home.com'];
+const ALLOWED_ORIGINS = ['https://clababy.com'];
 
 // AI学習・スクレイピング用クローラーはUAレベルでブロック（robots.txtは助言に過ぎないため強制する）。
 // Google-Extended / Applebot-Extended はUAを持たないrobots.txt専用トークンなのでここには含めない。
@@ -30,6 +33,11 @@ export default {
     }
     if (url.protocol === 'http:' && !isLocal) {
       url.protocol = 'https:';
+      return Response.redirect(url.toString(), 301);
+    }
+    // 旧ドメインは全パス維持で新ドメインへ301（kosodate.pint-home.com/setagaya-ku/ → clababy.com/setagaya-ku/）
+    if (LEGACY_HOSTS.includes(url.hostname)) {
+      url.hostname = CANONICAL_HOST;
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === '/api/prefs') {

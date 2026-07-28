@@ -10,6 +10,8 @@
   },
   "workers_dev": false,
   "routes": [
+    { "pattern": "clababy.com", "custom_domain": true },
+    // 旧ドメイン: 301リダイレクト用に残す（worker.jsのLEGACY_HOSTS参照）
     { "pattern": "kosodate.pint-home.com", "custom_domain": true }
   ]
 }

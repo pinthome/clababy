@@ -47,4 +47,4 @@ Disallow: /
 User-agent: *
 Disallow: /api/
 
-Sitemap: https://kosodate.pint-home.com/sitemap.xml
+Sitemap: https://clababy.com/sitemap.xml

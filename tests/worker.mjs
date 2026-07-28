@@ -19,16 +19,16 @@ const makeEnv = dev => {
 // 本番: httpはhttpsへ301（パス・クエリを維持）し、Assetsには委譲しない
 {
   const { env, calls } = makeEnv();
-  const res = await worker.fetch(new Request('http://kosodate.pint-home.com/foo?a=1'), env);
+  const res = await worker.fetch(new Request('http://clababy.com/foo?a=1'), env);
   assert(res.status === 301, `本番http: 301リダイレクト（実際: ${res.status}）`);
-  assert(res.headers.get('location') === 'https://kosodate.pint-home.com/foo?a=1', `本番http: Locationがhttps＋パス維持（実際: ${res.headers.get('location')}）`);
+  assert(res.headers.get('location') === 'https://clababy.com/foo?a=1', `本番http: Locationがhttps＋パス維持（実際: ${res.headers.get('location')}）`);
   assert(calls.length === 0, '本番http: Assetsに委譲しない');
 }
 
 // 本番: httpsはそのままAssetsに委譲する
 {
   const { env, calls } = makeEnv();
-  const res = await worker.fetch(new Request('https://kosodate.pint-home.com/'), env);
+  const res = await worker.fetch(new Request('https://clababy.com/'), env);
   assert(res.status === 200 && await res.text() === 'asset-body', '本番https: Assetsのレスポンスを返す');
   assert(calls.length === 1, '本番https: Assetsに1回委譲する');
 }
@@ -36,7 +36,7 @@ const makeEnv = dev => {
 // wrangler dev: request.urlが本番ドメインのhttpに見えてもDEVフラグでリダイレクトしない（無限リダイレクト再発防止）
 {
   const { env, calls } = makeEnv('true');
-  const res = await worker.fetch(new Request('http://kosodate.pint-home.com/'), env);
+  const res = await worker.fetch(new Request('http://clababy.com/'), env);
   assert(res.status === 200 && calls.length === 1, 'DEV時: httpでもリダイレクトせずAssetsに委譲する');
 }
 
@@ -47,21 +47,38 @@ for (const host of ['localhost:8787', '127.0.0.1:8787']) {
   assert(res.status === 200 && calls.length === 1, `${host}: httpでもリダイレクトしない`);
 }
 
+// ---- 旧ドメイン（kosodate.pint-home.com）→ 新ドメインへの301 ----
+{
+  const { env, calls } = makeEnv();
+  const res = await worker.fetch(new Request('https://kosodate.pint-home.com/'), env);
+  assert(res.status === 301 && res.headers.get('location') === 'https://clababy.com/' && calls.length === 0, '旧ドメイン: トップを301転送');
+}
+{
+  const { env, calls } = makeEnv();
+  const res = await worker.fetch(new Request('https://kosodate.pint-home.com/setagaya-ku/?utm_source=ig'), env);
+  assert(res.status === 301 && res.headers.get('location') === 'https://clababy.com/setagaya-ku/?utm_source=ig' && calls.length === 0, '旧ドメイン: パス・クエリ維持で301転送');
+}
+{
+  const { env } = makeEnv();
+  const res = await worker.fetch(new Request('http://kosodate.pint-home.com/foo'), env);
+  assert(res.status === 301 && res.headers.get('location') === 'https://kosodate.pint-home.com/foo', '旧ドメインhttp: まずhttps化（次のリクエストで新ドメインへ）');
+}
+
 // ---- AIクローラーのUAブロック ----
 for (const ua of ['GPTBot/1.0 (+https://openai.com/gptbot)', 'Mozilla/5.0 AppleWebKit compatible; ClaudeBot/1.0', 'CCBot/2.0', 'PerplexityBot/1.0', 'Bytespider']) {
   const { env, calls } = makeEnv();
-  const res = await worker.fetch(new Request('https://kosodate.pint-home.com/', { headers: { 'user-agent': ua } }), env);
+  const res = await worker.fetch(new Request('https://clababy.com/', { headers: { 'user-agent': ua } }), env);
   assert(res.status === 403 && calls.length === 0, `AIボット拒否: ${ua.split('/')[0]} は403`);
 }
 // 通常ブラウザ・検索エンジンは通す
 for (const ua of ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'Mozilla/5.0 (compatible; bingbot/2.0)']) {
   const { env, calls } = makeEnv();
-  const res = await worker.fetch(new Request('https://kosodate.pint-home.com/', { headers: { 'user-agent': ua } }), env);
+  const res = await worker.fetch(new Request('https://clababy.com/', { headers: { 'user-agent': ua } }), env);
   assert(res.status === 200 && calls.length === 1, `通常UA許可: ${ua.slice(0, 40)}...`);
 }
 
 // ---- /api/prefs: 同一オリジンのfetchのみ許可 ----
-const API = 'https://kosodate.pint-home.com/api/prefs';
+const API = 'https://clababy.com/api/prefs';
 
 // Sec-Fetch-Site: same-origin → 200＋212自治体のJSON
 {
@@ -79,7 +96,7 @@ const API = 'https://kosodate.pint-home.com/api/prefs';
 // Sec-Fetch-Siteなし＋自サイトReferer → 200（旧ブラウザ向けフォールバック）
 {
   const { env } = makeEnv();
-  const res = await worker.fetch(new Request(API, { headers: { referer: 'https://kosodate.pint-home.com/' } }), env);
+  const res = await worker.fetch(new Request(API, { headers: { referer: 'https://clababy.com/' } }), env);
   assert(res.status === 200, `API: 自サイトRefererで200（実際: ${res.status}）`);
 }
 
@@ -97,10 +114,10 @@ const API = 'https://kosodate.pint-home.com/api/prefs';
   assert(res.status === 403, `API: クロスサイトは403（実際: ${res.status}）`);
 }
 
-// Refererの前方一致偽装（kosodate.pint-home.com.evil.com） → 403
+// Refererの前方一致偽装（clababy.com.evil.com） → 403
 {
   const { env } = makeEnv();
-  const res = await worker.fetch(new Request(API, { headers: { referer: 'https://kosodate.pint-home.com.evil.example.com/' } }), env);
+  const res = await worker.fetch(new Request(API, { headers: { referer: 'https://clababy.com.evil.example.com/' } }), env);
   assert(res.status === 403, `API: 類似ドメインRefererは403（実際: ${res.status}）`);
 }
 

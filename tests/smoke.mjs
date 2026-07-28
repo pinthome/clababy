@@ -75,11 +75,11 @@ assert(html.includes('report_form'), '報告フォームクリックのGA計測�
   assert(dirs.length === 212, `自治体別ページが212枚ある（実際: ${dirs.length}）`);
   const setagayaPage = readFileSync(new URL('../public/setagaya-ku/index.html', import.meta.url), 'utf8');
   assert(setagayaPage.includes('世田谷区の子育て支援制度まとめ'), '世田谷区ページにタイトルがある');
-  assert(setagayaPage.includes('<link rel="canonical" href="https://kosodate.pint-home.com/setagaya-ku/">'), '世田谷区ページにcanonicalがある');
+  assert(setagayaPage.includes('<link rel="canonical" href="https://clababy.com/setagaya-ku/">'), '世田谷区ページにcanonicalがある');
   assert(setagayaPage.includes('バースデーサポート'), '世田谷区ページに独自給付がある');
   const sitemap = readFileSync(new URL('../public/sitemap.xml', import.meta.url), 'utf8');
   assert((sitemap.match(/<loc>/g) || []).length === 213, `sitemapにトップ＋212ページのURLがある（実際: ${(sitemap.match(/<loc>/g) || []).length}）`);
-  assert(sitemap.includes('https://kosodate.pint-home.com/setagaya-ku/'), 'sitemapに世田谷区ページがある');
+  assert(sitemap.includes('https://clababy.com/setagaya-ku/'), 'sitemapに世田谷区ページがある');
   assert(built.includes('href="/setagaya-ku/"'), 'トップページのフッターに自治体ページへのリンクが注入されている');
 }
 assert(!/^const PREFS = \{/m.test(html), 'ソースにPREFSデータが埋め込まれていない');
@@ -117,14 +117,14 @@ assert(!built.includes('function calcStages'), 'ビルド生成物の識別子�
 // ---- SEO: meta / OGP / canonical / 構造化データ（ソースとビルド生成物の両方） ----
 for (const [label, doc] of [['ソース', html], ['ビルド', built]]) {
   assert(/<meta name="description" content="[^"]{50,}">/.test(doc), `${label}: meta descriptionがある`);
-  assert(doc.includes('<link rel="canonical" href="https://kosodate.pint-home.com/">'), `${label}: canonicalがある`);
+  assert(doc.includes('<link rel="canonical" href="https://clababy.com/">'), `${label}: canonicalがある`);
   assert(doc.includes('property="og:title"') && doc.includes('property="og:image"'), `${label}: OGP（og:title/og:image）がある`);
   assert(doc.includes('name="twitter:card"'), `${label}: Twitterカードがある`);
   const ld = doc.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
   assert(!!ld, `${label}: JSON-LD構造化データがある`);
   if (ld) { try { JSON.parse(ld[1]); assert(true, `${label}: JSON-LDが正しいJSON`); } catch { assert(false, `${label}: JSON-LDが正しいJSON`); } }
 }
-assert(built.includes('https://kosodate.pint-home.com/img/onb-1.jpg'), 'OGP画像URLが絶対パスで指定されている');
+assert(built.includes('https://clababy.com/img/onb-1.jpg'), 'OGP画像URLが絶対パスで指定されている');
 
 // ---- サービス名（クラベビー） ----
 for (const [label, doc] of [['ソース', html], ['ビルド', built]]) {
