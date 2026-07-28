@@ -183,6 +183,9 @@ function renderPage(m, pref, prefItems, slug) {
 <title>${esc(m.name)}の子育て支援制度まとめ（${updated}時点）｜クラベビー</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${url}">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="192x192" href="/img/icon-192.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${esc(m.name)}の子育て支援制度まとめ">
 <meta property="og:description" content="${esc(desc)}">

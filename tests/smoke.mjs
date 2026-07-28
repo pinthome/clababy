@@ -131,6 +131,7 @@ for (const [label, doc] of [['ソース', html], ['ビルド', built]]) {
   assert(doc.includes('<title>クラベビー｜'), `${label}: titleがクラベビー`);
   assert(doc.includes('くらべて、暮らしをごきげんに。'), `${label}: タグラインがある`);
   assert(doc.includes('img/logo.png'), `${label}: ロゴ画像を使っている`);
+  assert(doc.includes('/favicon.ico') && doc.includes('/apple-touch-icon.png'), `${label}: ファビコンのlinkがある`);
   assert(!doc.includes('引っ越し先の子育て支援くらべ'), `${label}: 旧サービス名が残っていない`);
 }
 {
