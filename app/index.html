@@ -1007,6 +1007,20 @@ function bulletsHtml(escaped){
   const lines = String(escaped).split('\n').filter(l => l.trim());
   return lines.length > 1 ? lines.map(l => '・' + l).join('<br>') : (lines[0] || '');
 }
+// 「／」「。」「、」区切りの列挙文を項目に分割する（括弧内は区切らない）
+function splitServices(text){
+  const out = []; let buf = '', depth = 0;
+  for(const ch of String(text || '')){
+    if(ch === '（' || ch === '(') depth++;
+    if(ch === '）' || ch === ')') depth = Math.max(0, depth - 1);
+    if((ch === '／' || ch === '。' || ch === '、') && depth === 0){ if(buf.trim()) out.push(buf.trim()); buf = ''; continue; }
+    buf += ch;
+  }
+  if(buf.trim()) out.push(buf.trim());
+  return out;
+}
+// 項目配列を「・」付き＋金額強調で描画（完全一致の重複は除去）
+function itemListHtml(items){ return [...new Set(items.filter(Boolean))].map(l => '・' + mnyHtml(esc(l))).join('<br>'); }
 // この条件（入力した子の年齢・人数）で合計に算入された自治体独自給付のラベル集合
 function countedMuniLabels(s){
   const set = new Set();
@@ -1120,10 +1134,9 @@ function detailHtml(d, s){
     <h4><span class="layer-tag shi">自治体</span>${esc(d.name)}の制度</h4>
     ${muniBody}
     <h4><span class="layer-tag to">${tag}</span>${esc(d.pref)}の制度（${tag}内共通）</h4>
-    <div class="common-note">${esc(conf.prefItems.map(i => i[0]).join('／'))}
-${esc(conf.prefServices)}</div>
+    <div class="common-note">${itemListHtml([...conf.prefItems.map(i => i[0]), ...splitServices(conf.prefServices)])}</div>
     <h4><span class="layer-tag kuni">国</span>全国共通の制度</h4>
-    <div class="common-note">${kuniItems().map(i => esc(i[0])).join('\n')}</div>
+    <div class="common-note">${itemListHtml(kuniItems().map(i => i[0]))}</div>
     ${officialLink}
     ${(d.refs || []).length ? `<details class="refs"><summary>制度別の出典（${d.refs.length}件）</summary><ul>${d.refs.map(r => `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.label)}</a></li>`).join('')}</ul></details>` : ''}
     ${d.checked ? `<p class="calcnote-mini">情報確認日: ${esc(d.checked)}（各自治体公式サイトによる）</p>` : ''}`;
