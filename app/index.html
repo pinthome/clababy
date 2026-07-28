@@ -79,6 +79,10 @@ header.hero{text-align:center}
 h1{margin:18px 0 6px; line-height:1}
 .logo-img{width:min(330px, 76vw); height:auto; display:inline-block}
 .tagline{font-family:var(--font-round); font-size:14px; font-weight:700; color:var(--joy-deep); margin:0 0 12px; letter-spacing:.06em}
+.brandcopy{font-family:var(--font-round); font-size:13.5px; font-weight:600; color:var(--ink); line-height:2.05; margin:18px auto 0; max-width:36em}
+.hero-cta-wrap{margin:20px 0 22px}
+.gobtn.hero-cta{width:auto; min-width:min(320px, 82vw); display:inline-block}
+.gobtn.hero-cta:hover{filter:brightness(1.15)}
 .lede{color:var(--muted); font-size:13.5px; margin:0 auto; line-height:1.8; max-width:34em}
 .hero .linkfake{margin-top:12px}
 .pref-tabs{display:flex; gap:8px; margin:22px -16px 0; padding:4px 16px 8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; justify-content:flex-start}
@@ -410,6 +414,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   <div class="eyebrow">1都3県212市区町村の子育て支援くらべ</div>
   <h1><img class="logo-img" src="img/logo.png" alt="クラベビー（Clababy）" width="1100" height="292"></h1>
   <p class="tagline">くらべて、暮らしをごきげんに。</p>
+  <p class="brandcopy">くらべることは、迷うことではなく、<br>自分たちに合った暮らしを見つけること。<br><br>Clababy（クラベビー）は、自治体ごとの子育て支援を<br>やさしく、わかりやすく比較できるサービスです。<br><br>くらべることで、家族一人ひとりの未来がもっと楽しみになる。<br>そんな、毎日をごきげんにするお手伝いをします。</p>
+  <p class="hero-cta-wrap"><button class="gobtn hero-cta" id="heroCta">早速比較する</button></p>
   <p class="lede">住む自治体で、受けられる子育て支援は大きく変わります。ご家族の条件を入れるだけで、妊娠〜出生・未就学・小中高のステージ別に「これから受けられる支援」と自治体ごとの制度の違いがわかります。</p>
   <p style="margin:10px 0 0"><button class="linkbtn" id="onbOpenBtn" style="font-size:12.5px">💡 はじめての方へ（ごあいさつ・活用方法）</button></p>
   <div class="pref-tabs" role="tablist" id="prefTabs"></div>
@@ -1333,6 +1339,10 @@ document.getElementById('onbPrev').addEventListener('click', () => { if(onbIdx >
 document.getElementById('onbClose').addEventListener('click', closeOnb);
 document.getElementById('onbOv').addEventListener('click', e => { if(e.target.id === 'onbOv') closeOnb(); });
 document.getElementById('onbOpenBtn').addEventListener('click', openOnb);
+document.getElementById('heroCta').addEventListener('click', () => {
+  track('click_cta', { cta: 'hero_start', location: 'hero' });
+  document.querySelector('section.panel[aria-label="条件入力"]').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 const sharedOpen = restoreFromUrl();
 // 共有リンクから開いた場合はオンボーディングを出さず、比較内容を先に見せる
 if(!sharedOpen){ try{ if(!localStorage.getItem('kosodate_onb_seen')) openOnb(); }catch(e){ openOnb(); } }
