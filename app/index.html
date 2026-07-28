@@ -312,6 +312,10 @@ table.cmp .dprice{max-width:none; width:100%}
 .dprices{display:flex; flex-direction:column; gap:2px}
 .dprice{display:flex; justify-content:space-between; gap:10px; max-width:250px}
 .dnote{display:block; font-size:11px; color:var(--muted)}
+.dline.off{opacity:.62}
+.dline.off .dwhen{background:var(--tint); color:var(--muted)}
+.dline.off b.m{color:var(--muted)}
+.offtag{display:inline-block; margin-left:6px; background:var(--tint); color:var(--muted); border-radius:var(--r-pill); font-size:9.5px; font-weight:700; padding:1px 7px; white-space:nowrap; vertical-align:1px}
 .detail .common-note{font-size:12px; white-space:pre-line}
 .stagecalc{font-size:11.5px; background:var(--tint); border-radius:8px; padding:10px 12px; margin-bottom:4px}
 .stagecalc .sg{font-weight:700; margin-top:6px}
@@ -998,14 +1002,38 @@ function stageCalcHtml(s){
 }
 // 金額・ポイント表現を強調（esc済みテキストに適用すること）
 function mnyHtml(t){ return t.replace(/([0-9０-９][0-9０-９,，]*(?:\.[0-9]+)?万?円(?:相当)?(?:分)?|[0-9][0-9,]*万?ポイント)/g, '<b class="m">$1</b>'); }
-// カード詳細用: 独自給付を「時期チップ＋名称＋金額」の行に整形
-function benefitsHtml(d){
-  const row = (when, label, amt) => `<div class="dline"><span class="dwhen">${esc(when)}</span><span><b>${esc(label)}</b>　${mnyHtml(esc(amt))}</span></div>`;
+// 複数行のテキストだけ「・」付きの箇条書きにする（1行のときはそのまま）
+function bulletsHtml(escaped){
+  const lines = String(escaped).split('\n').filter(l => l.trim());
+  return lines.length > 1 ? lines.map(l => '・' + l).join('<br>') : (lines[0] || '');
+}
+// この条件（入力した子の年齢・人数）で合計に算入された自治体独自給付のラベル集合
+function countedMuniLabels(s){
+  const set = new Set();
+  if(!s || !s.S) return set;
+  ['birth', 'pre', 'school'].forEach(st => (s.S[st].lines || []).forEach(([l, v, t]) => {
+    if(t === 'm') set.add(String(l).replace(/ ×\d+人$/, ''));
+  }));
+  return set;
+}
+// カード詳細用: 独自給付を「時期チップ＋名称＋金額」の行に整形。
+// sを渡すと、この条件では受け取る機会が過ぎている制度を「合計外」としてグレー表示する
+function benefitsHtml(d, s){
+  const counted = countedMuniLabels(s);
+  // sが無い（判定できない）場合はグレー表示しない
+  const isOn = label => !s || !s.S || [...counted].some(c => c === label || c.startsWith(label + '（'));
   const rows = [];
+  const row = (when, label, amt) => {
+    const on = isOn(label);
+    return `<div class="dline${on ? '' : ' off'}"><span class="dwhen">${esc(when)}</span><span><b>${esc(label)}</b>　${mnyHtml(esc(amt))}${on ? '' : '<span class="offtag">合計外</span>'}</span></div>`;
+  };
   (d.birth || []).forEach(b => rows.push(row('妊娠・出産', b.label, amtText(b.amounts))));
   (d.bday || []).forEach(b => rows.push(row(`${b.age}歳`, b.label, amtText(b.amounts))));
   (d.tsuki || []).forEach(ts => rows.push(row(`${ts.from}〜${ts.to - 1}歳`, ts.label, `月${ts.monthly.toLocaleString()}円`)));
-  return rows.join('') || '独自の現金・商品券給付はなし';
+  if(!rows.length) return '独自の現金・商品券給付はなし';
+  const note = rows.some(r => r.includes('offtag'))
+    ? '<div class="dnote">※「合計外」は制度がないという意味ではなく、入力されたお子さまの年齢では受け取る機会が過ぎている（またはまだ対象でない）ため、上の合計に含めていないものです。</div>' : '';
+  return rows.join('') + note;
 }
 // カード詳細用: bsテキスト（対象児童/補助金額の2見出し構成）を「対象/補助額」行に整形
 function bsHtml(d){
@@ -1069,9 +1097,9 @@ function detailHtml(d, s){
   const yochien = state.care === 'yochien' && isTokyo ? `<div><dt>私立幼稚園の保護者補助（幼稚園予定のため表示）</dt><dd>${esc(d.yochien || '—')}</dd></div>` : (isTokyo ? `<div><dt>私立幼稚園の保護者補助（無償化給付とは別）</dt><dd>${esc(d.yochien || '—')}</dd></div>` : '');
   const muniBody = isTokyo ? `
     <dl>
-      <div><dt>独自の現金・商品券給付</dt><dd>${benefitsHtml(d)}</dd></div>
-      <div><dt>子ども医療費助成</dt><dd>${mnyHtml(esc(d.iryo))}</dd></div>
-      <div><dt>学校給食費</dt><dd>${esc(d.kyushoku)}</dd></div>
+      <div><dt>独自の現金・商品券給付</dt><dd>${benefitsHtml(d, s)}</dd></div>
+      <div><dt>子ども医療費助成</dt><dd>${bulletsHtml(mnyHtml(esc(d.iryo)).replace(/。(?=.)/g, '。\n'))}</dd></div>
+      <div><dt>学校給食費</dt><dd>${bulletsHtml(esc(d.kyushoku).replace(/／/g, '\n'))}</dd></div>
       <div><dt>認証保育所などの保育料補助</dt><dd>${mnyHtml(esc(d.ninsho || '—'))}</dd></div>
       ${yochien}
       <div><dt>ベビーシッター利用支援（都事業）</dt><dd>${bsHtml(d)}</dd></div>
@@ -1079,9 +1107,9 @@ function detailHtml(d, s){
       <div><dt>待機児童</dt><dd>保育所 ${taikiText(d.hoiku)}／放課後児童クラブ ${gakudoTextFor(d)}</dd></div>
     </dl>` : `
     <dl>
-      <div><dt>独自の現金・商品券給付</dt><dd>${benefitsHtml(d)}</dd></div>
-      <div><dt>子ども医療費助成</dt><dd>${mnyHtml(esc(d.iryo))}</dd></div>
-      <div><dt>学校給食費</dt><dd>${esc(d.kyushoku)}</dd></div>
+      <div><dt>独自の現金・商品券給付</dt><dd>${benefitsHtml(d, s)}</dd></div>
+      <div><dt>子ども医療費助成</dt><dd>${bulletsHtml(mnyHtml(esc(d.iryo)).replace(/。(?=.)/g, '。\n'))}</dd></div>
+      <div><dt>学校給食費</dt><dd>${bulletsHtml(esc(d.kyushoku).replace(/／/g, '\n'))}</dd></div>
       <div><dt>そのほか注目の支援</dt><dd>${sonotaHtml(d.sonota)}</dd></div>
       <div><dt>待機児童</dt><dd>保育所 ${taikiText(d.hoiku)}／放課後児童クラブ ${gakudoTextFor(d)}</dd></div>
     </dl>`;
@@ -1143,11 +1171,11 @@ function openCompare(){
         ${moneyRow('小中高（6〜18歳）', ss.map(s => s.school))}
         ${moneyRow('合計', ss.map(s => s.total), i => `うち自治体独自 ${man(ss[i].muni)}`, 'rtotal')}
         ${section('制度の違い')}
-        ${row('都県の制度', d => `【${esc(d.pref)}】\n` + mnyHtml(esc(PREFS[d.pref].prefItems.map(i => i[0]).join('\n'))), 'longtext')}
-        ${row('そのほかの制度', d => { const ts = d.tags.filter(t => TAG_LABELS[t]); return ts.length ? ts.map(t => TAG_LABELS[t]).join('\n') : '—'; })}
-        ${row('子ども医療費助成', d => esc(d.iryo).replace(/。(?=.)/g, '。\n'), 'longtext')}
-        ${row('学校給食費', d => esc(d.kyushoku).replace(/／/g, '\n'), 'longtext')}
-        ${row('独自給付（制度一覧）', d => benefitsHtml(d), 'longtext')}
+        ${row('都県の制度', d => `【${esc(d.pref)}】<br>` + bulletsHtml(mnyHtml(esc(PREFS[d.pref].prefItems.map(i => i[0]).join('\n')))), 'longtext')}
+        ${row('そのほかの制度', d => { const ts = d.tags.filter(t => TAG_LABELS[t]); return ts.length ? bulletsHtml(ts.map(t => esc(TAG_LABELS[t])).join('\n')) : '—'; })}
+        ${row('子ども医療費助成', d => bulletsHtml(mnyHtml(esc(d.iryo)).replace(/。(?=.)/g, '。\n')), 'longtext')}
+        ${row('学校給食費', d => bulletsHtml(esc(d.kyushoku).replace(/／/g, '\n')), 'longtext')}
+        ${row('独自給付（制度一覧）', (d, s) => benefitsHtml(d, s), 'longtext')}
         ${row('そのほか注目の支援', d => sonotaHtml(d.sonota), 'longtext')}
         ${tokyoRows}
         ${section('保育・預け先')}
