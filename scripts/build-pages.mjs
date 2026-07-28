@@ -167,11 +167,11 @@ function renderPage(m, pref, prefItems, slug) {
     '@context': 'https://schema.org',
     '@graph': [
       { '@type': 'BreadcrumbList', itemListElement: [
-        { '@type': 'ListItem', position: 1, name: '引っ越し先の子育て支援くらべ', item: ORIGIN + '/' },
+        { '@type': 'ListItem', position: 1, name: 'クラベビー', item: ORIGIN + '/' },
         { '@type': 'ListItem', position: 2, name: `${m.name}の子育て支援`, item: url },
       ]},
       { '@type': 'WebPage', name: `${m.name}の子育て支援制度まとめ`, url, dateModified: updated,
-        description: desc, isPartOf: { '@type': 'WebSite', name: '引っ越し先の子育て支援くらべ', url: ORIGIN + '/' } },
+        description: desc, isPartOf: { '@type': 'WebSite', name: 'クラベビー', url: ORIGIN + '/' } },
     ],
   });
 
@@ -180,7 +180,7 @@ function renderPage(m, pref, prefItems, slug) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(m.name)}の子育て支援制度まとめ（${updated}時点）｜引っ越し先の子育て支援くらべ</title>
+<title>${esc(m.name)}の子育て支援制度まとめ（${updated}時点）｜クラベビー</title>
 <meta name="description" content="${esc(desc)}">
 <link rel="canonical" href="${url}">
 <meta property="og:type" content="article">
@@ -224,7 +224,7 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 16px 32
 </head>
 <body>
 <main>
-<nav class="crumb"><a href="/">引っ越し先の子育て支援くらべ</a> › ${esc(pref)} › ${esc(m.name)}</nav>
+<nav class="crumb"><a href="/">クラベビー</a> › ${esc(pref)} › ${esc(m.name)}</nav>
 <h1>${esc(m.name)}の子育て支援制度まとめ</h1>
 <p class="sub">${esc(pref)}${m.area ? '・' + esc(m.area) : ''}／${updated}時点の公表情報にもとづく</p>
 <div class="chips">${chips.map(([k, v]) => `<span class="st">${esc(k)} <b>${esc(v)}</b></span>`).join('')}</div>
@@ -245,9 +245,9 @@ ${section(`${esc(pref)}の共通制度`, prefList ? `<ul>${prefList}</ul>` : '')
 ${section('出典・公式情報', `<ul><li><a href="${esc(m.url)}" target="_blank" rel="noopener">${esc(m.name)} 子育て支援 公式ページ</a></li>${refLinks}</ul><p class="note">確認日: ${updated}。制度は変更される場合があります。最新情報は必ず公式サイトでご確認ください。</p>`)}
 
 <a class="cta" href="/">${esc(m.name)}をほかの自治体とくらべてみる →</a>
-<p class="note">「引っ越し先の子育て支援くらべ」では、1都3県212市区町村の子育て支援を、ご家族の条件に合わせた受給見込み額つきで比較できます。</p>
+<p class="note">「クラベビー」では、1都3県212市区町村の子育て支援を、ご家族の条件に合わせた受給見込み額つきで比較できます。</p>
 </main>
-<footer>© 引っ越し先の子育て支援くらべ｜掲載情報は${updated}時点の概要です。金額・要件の正確な内容は各自治体の公式情報をご確認ください。</footer>
+<footer>© クラベビー｜掲載情報は${updated}時点の概要です。金額・要件の正確な内容は各自治体の公式情報をご確認ください。</footer>
 </body>
 </html>
 `;

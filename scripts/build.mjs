@@ -10,7 +10,7 @@ import { transformSync } from 'esbuild';
 const SRC = new URL('../app/index.html', import.meta.url);
 const OUT = new URL('../public/index.html', import.meta.url);
 
-const BANNER = '<!-- (c) 2026 引っ越し先の子育て支援くらべ（kosodate.pint-home.com） All rights reserved. '
+const BANNER = '<!-- (c) 2026 クラベビー（kosodate.pint-home.com） All rights reserved. '
   + '本サイトのコード・データの無断転載・複製・自動取得（スクレイピング）を禁じます。 -->';
 
 let html = readFileSync(SRC, 'utf8');

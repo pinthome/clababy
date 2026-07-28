@@ -126,6 +126,17 @@ for (const [label, doc] of [['ソース', html], ['ビルド', built]]) {
 }
 assert(built.includes('https://kosodate.pint-home.com/img/onb-1.jpg'), 'OGP画像URLが絶対パスで指定されている');
 
+// ---- サービス名（クラベビー） ----
+for (const [label, doc] of [['ソース', html], ['ビルド', built]]) {
+  assert(doc.includes('<title>クラベビー｜'), `${label}: titleがクラベビー`);
+  assert(doc.includes('比べる、暮らすをごきげんに。'), `${label}: タグラインがある`);
+  assert(!doc.includes('引っ越し先の子育て支援くらべ'), `${label}: 旧サービス名が残っていない`);
+}
+{
+  const page = readFileSync(new URL('../public/setagaya-ku/index.html', import.meta.url), 'utf8');
+  assert(page.includes('｜クラベビー</title>') && !page.includes('引っ越し先の子育て支援くらべ'), '自治体別ページもクラベビー表記');
+}
+
 // ---- 比較の上限と並び替え ----
 assert(/const MAX_CMP = 6;/.test(html), '比較上限が6（MAX_CMP定数）');
 assert(!/compare\.length >= 3\b/.test(html), '比較上限のハードコード3が残っていない');
