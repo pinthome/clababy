@@ -76,9 +76,9 @@ header.hero{text-align:center}
 .copyfoot .linkbtn{font-size:11px; color:var(--muted)}
 .copyfoot .cline{letter-spacing:.04em}
 .eyebrow{display:inline-block; font-size:11px; letter-spacing:.12em; color:var(--accent); font-weight:700; background:var(--surface); border-radius:var(--r-pill); padding:6px 16px; box-shadow:var(--sh-sm)}
-h1{font-family:var(--font-round); font-size:34px; font-weight:800; letter-spacing:.04em; margin:14px 0 4px; line-height:1.3}
-h1 .hl{background:linear-gradient(transparent 68%, rgba(230,120,116,.42) 68%)}
-.tagline{font-family:var(--font-round); font-size:14px; font-weight:700; color:var(--joy-deep); margin:0 0 12px; letter-spacing:.02em}
+h1{margin:18px 0 6px; line-height:1}
+.logo-img{width:min(330px, 76vw); height:auto; display:inline-block}
+.tagline{font-family:var(--font-round); font-size:14px; font-weight:700; color:var(--joy-deep); margin:0 0 12px; letter-spacing:.06em}
 .lede{color:var(--muted); font-size:13.5px; margin:0 auto; line-height:1.8; max-width:34em}
 .hero .linkfake{margin-top:12px}
 .pref-tabs{display:flex; gap:8px; margin:22px -16px 0; padding:4px 16px 8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; justify-content:flex-start}
@@ -373,7 +373,7 @@ footer.note p{margin:0 0 6px}
 button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
 @media (min-width:760px){
   .wrap{max-width:1000px; padding:36px 24px 120px}
-  h1{font-size:40px}
+  .logo-img{width:380px}
   .tagline{font-size:15.5px}
   .lede{font-size:15px}
   .pref-tabs{margin:22px 0 0; padding:0; overflow:visible}
@@ -408,8 +408,8 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
 <div class="wrap">
 <header class="site hero">
   <div class="eyebrow">1都3県212市区町村の子育て支援くらべ</div>
-  <h1><span style="display:inline-block"><span class="hl">クラベビー</span></span></h1>
-  <p class="tagline">比べる、暮らすをごきげんに。</p>
+  <h1><img class="logo-img" src="img/logo.png" alt="クラベビー（Clababy）" width="1100" height="292"></h1>
+  <p class="tagline">くらべて、暮らしをごきげんに。</p>
   <p class="lede">住む自治体で、受けられる子育て支援は大きく変わります。ご家族の条件を入れるだけで、妊娠〜出生・未就学・小中高のステージ別に「これから受けられる支援」と自治体ごとの制度の違いがわかります。</p>
   <p style="margin:10px 0 0"><button class="linkbtn" id="onbOpenBtn" style="font-size:12.5px">💡 はじめての方へ（ごあいさつ・活用方法）</button></p>
   <div class="pref-tabs" role="tablist" id="prefTabs"></div>
