@@ -595,6 +595,9 @@ const STAGE_LABELS = {birth:'妊娠〜出生', pre:'未就学', school:'小中�
 const MAX_KIDS = 10;
 const state = { view:'main', showAll:false, q:'', pref:'1都3県すべて', kids:[{age:-1}], care:'ninka', single:false, twins:false, careNeeds:false, cmpPref:'東京都', sort:'name', compare:[], openDetail:new Set() };
 const MAX_CMP = 6; // 比較できる自治体数の上限
+// 撮影・確認用デモモード（localhost限定・?demo=hero|cards|detail|cmp）。オンボは開かせない
+const DEMO = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? new URLSearchParams(location.search).get('demo') : null;
+if(DEMO){ try{ localStorage.setItem('kosodate_onb_seen', '1'); }catch(e){} }
 
 const ALL_MUNIS = Object.values(PREFS).flatMap(c => c.munis);
 // ---- 計測（GA4）。gtag未読込（localhost・ブロック時）は何もしない ----
@@ -1385,6 +1388,34 @@ document.getElementById('overlay').addEventListener('click', e => { if(e.target.
 
 renderAll();
 if(sharedOpen) setTimeout(() => document.getElementById('list')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 150);
+
+// 撮影・確認用デモモードの状態再現（データ取得完了を待ってから実行）
+if(DEMO){
+  state.kids = [{ age: 0 }];
+  const applyDemo = () => {
+    if(!document.querySelector('#browseList, .stages') && !findMuni('世田谷区')){ setTimeout(applyDemo, 200); return; }
+    state.compare = ['世田谷区', '流山市', '港区'];
+    renderAll();
+    setTimeout(() => {
+      // ヘッドレス撮影はスクロールが効かないため、対象より上のセクションを隠して先頭に持ってくる
+      const hideAbove = () => {
+        const list = document.getElementById('list');
+        [...document.querySelector('.wrap').children].forEach(el => { if(el !== list && !el.contains(list)) el.style.display = 'none'; });
+        document.getElementById('cmpBar')?.style.setProperty('display', 'none');
+      };
+      if(DEMO === 'detail'){
+        hideAbove();
+        const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('詳しく見る'));
+        btn?.click();
+      } else if(DEMO === 'cmp'){
+        openCompare();
+      } else if(DEMO === 'cards'){
+        hideAbove();
+      }
+    }, 350);
+  };
+  setTimeout(applyDemo, 300);
+}
 </script>
 </body>
 </html>
