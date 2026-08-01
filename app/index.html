@@ -395,10 +395,11 @@ button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible
   .cmpgo-wrap .gobtn{max-width:420px}
 }
 </style>
-<!-- Google アナリティクス（GA4）。localhost では計測しない -->
+<!-- Google アナリティクス（GA4）。localhost と データセンター由来（__NOTRACK）では計測しない -->
 <script>
 (function(){
   if(location.hostname === 'localhost' || location.hostname === '127.0.0.1') return;
+  if(window.__NOTRACK) return; // src/worker.js がデータセンターASNのHTMLに注入する
   var ID = 'G-191KRRCF6H';
   var s = document.createElement('script');
   s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + ID;

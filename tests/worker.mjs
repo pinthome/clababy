@@ -1,5 +1,13 @@
 // Workerテスト: fetchハンドラを直接実行し、リダイレクトとAssets委譲を検証
-import worker from '../src/worker.js';
+import worker, { isDatacenter } from '../src/worker.js';
+
+// HTMLRewriterはWorkers専用グローバル。Node実行では最小スタブで「変換したか」だけ見る。
+// worker.js は fetch 内でしか参照しないので、import後に生やせば間に合う
+globalThis.HTMLRewriter = class {
+  constructor() { this.selectors = []; }
+  on(sel) { this.selectors.push(sel); return this; }
+  transform(res) { res.transformedBy = this.selectors; return res; }
+};
 
 let failed = 0;
 const assert = (cond, msg) => {
@@ -75,6 +83,44 @@ for (const ua of ['Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleW
   const { env, calls } = makeEnv();
   const res = await worker.fetch(new Request('https://clababy.com/', { headers: { 'user-agent': ua } }), env);
   assert(res.status === 200 && calls.length === 1, `通常UA許可: ${ua.slice(0, 40)}...`);
+}
+
+// ---- データセンター由来アクセスの計測抑止（GA4のボット汚染対策） ----
+// Assetsがtext/htmlを返す版（本番のHTML配信を模す）
+const makeHtmlEnv = () => ({
+  ASSETS: { fetch: () => Promise.resolve(new Response('<html><head></head></html>', { headers: { 'content-type': 'text/html; charset=utf-8' } })) },
+});
+// 本番では request.cf をCloudflareランタイムが付ける。Nodeのnew Requestはinitから引き継がないため後付けする
+const withAsn = (url, asn) => Object.assign(new Request(url), { cf: { asn } });
+
+// ASN判定: クラウド事業者はtrue、一般ISPとcf無し（dev/テスト）はfalse
+for (const [asn, want, label] of [[16509, true, 'AWS'], [15169, true, 'Google Cloud'], [24940, true, 'Hetzner'], [2516, false, 'KDDI'], [4713, false, 'NTT OCN'], [17676, false, 'SoftBank']]) {
+  assert(isDatacenter(withAsn('https://clababy.com/', asn)) === want, `ASN判定: ${label}(${asn}) は ${want}`);
+}
+assert(isDatacenter(new Request('https://clababy.com/')) === false, 'ASN判定: cf無し（wrangler dev・テスト）は計測する');
+
+// データセンター＋HTML → __NOTRACK を注入するためhead要素を変換する
+{
+  const res = await worker.fetch(withAsn('https://clababy.com/', 16509), makeHtmlEnv());
+  assert(res.transformedBy?.includes('head'), 'データセンター＋HTML: head を変換して __NOTRACK を注入');
+}
+// 通常ISP＋HTML → 変換せずそのまま返す（実ユーザーは計測する）
+{
+  const res = await worker.fetch(withAsn('https://clababy.com/', 2516), makeHtmlEnv());
+  assert(res.transformedBy === undefined, '通常ISP＋HTML: 変換せずそのまま返す');
+}
+// データセンターでもHTML以外（画像・JS等）は変換しない
+{
+  const { env } = makeEnv(); // asset-body は text/plain
+  const res = await worker.fetch(withAsn('https://clababy.com/img/logo.png', 16509), env);
+  assert(res.transformedBy === undefined, 'データセンター＋非HTML: 変換しない');
+}
+// UAブロック対象のボットはASN判定より前に403（計測抑止以前に配信しない）
+{
+  const { env, calls } = makeEnv();
+  const req = Object.assign(new Request('https://clababy.com/', { headers: { 'user-agent': 'Amazonbot/0.1' } }), { cf: { asn: 16509 } });
+  const res = await worker.fetch(req, env);
+  assert(res.status === 403 && calls.length === 0, 'Amazonbot: ASN判定に到達せず403');
 }
 
 // ---- /api/prefs: 同一オリジンのfetchのみ許可 ----

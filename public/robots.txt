@@ -44,6 +44,39 @@ Disallow: /
 User-agent: DuckAssistBot
 Disallow: /
 
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: meta-externalfetcher
+Disallow: /
+
+User-agent: Google-CloudVertexBot
+Disallow: /
+
+User-agent: FirecrawlAgent
+Disallow: /
+
+User-agent: MistralAI-User
+Disallow: /
+
+User-agent: YouBot
+Disallow: /
+
+User-agent: TikTokSpider
+Disallow: /
+
+User-agent: Webzio-Extended
+Disallow: /
+
+User-agent: img2dataset
+Disallow: /
+
+User-agent: VelenPublicWebCrawler
+Disallow: /
+
+User-agent: SBIntuitionsBot
+Disallow: /
+
 User-agent: *
 Disallow: /api/
 

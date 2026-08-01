@@ -42,4 +42,5 @@ npm run deploy    # build + wrangler deploy
 - 厳格な `script-src` を使いたい場合は、先に Cloudflare ダッシュボードで該当サイトの Web Analytics（RUM 自動セットアップ）を無効化すること。
 - **npm audit の既知の警告（許容済み）**: `wrangler → miniflare → sharp` の high 3件（libvips CVE）は開発ツール内のみで、本番の Worker/配信物には含まれない。miniflare が sharp 0.35 系に更新されたら `npm update wrangler` で解消すること（2026-07 時点で修正版なし）。
 - **AIクローラー対策**: robots.txt（助言）と Worker の UA ブロック（強制・`src/worker.js` の `AI_BOT_UA`）の二段構え。新しいAIボットが現れたら両方に追記する。
+- **GA4のボット混入対策**: UAを詐称してJSを実行するボットは `AI_BOT_UA` をすり抜け、GA4の数値を汚す（2026-07の28日間で英語ユーザー48人中25人がAWS/GCPのデータセンター都市＝Ashburn・Council Bluffs・Boardman・Amsterdam だった）。対策として `src/worker.js` の `DATACENTER_ASN` に該当する `request.cf.asn` からのHTMLアクセスには HTMLRewriter で `window.__NOTRACK=1` を注入し、`app/index.html` の gtag 初期化を止める。**アクセス自体は403にしないこと** — VPN経由の実ユーザーが同じASNになるため、遮断すると正規の閲覧を巻き込む。目的は遮断ではなく計測の汚染防止。
 - 保育所待機児童数は都県で公表時期が異なるため基準年度が混在する（神奈川=令和8年4月1日、他は大半が令和7年4月1日）。毎年8〜9月に各都県の新年度値が出揃ったら更新する。
