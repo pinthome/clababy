@@ -155,7 +155,7 @@ function renderPage(m, pref, prefItems, slug) {
   const chips = [
     ['医療費', m.iryoChip], ['給食', m.kyushokuChip],
     ['保育所待機児童', m.hoiku != null ? `${m.hoiku}人` : null],
-    ['学童クラブ待機', m.gakudo != null ? `${m.gakudo}人` : null],
+    ['学童クラブ待機', m.gakudo != null ? `${m.gakudo}人` : m.gakudoNone ? '実施なし' : null],
   ].filter(([, v]) => v);
   const desc = `${m.name}の子育て支援制度まとめ。医療費助成は${m.iryoChip}、給食は${m.kyushokuChip}、保育所待機児童は${m.hoiku}人。妊娠・出産の給付や独自支援を一覧で確認できます（${updated}時点）。`;
 
@@ -235,7 +235,7 @@ footer{font-size:11.5px;color:var(--muted);text-align:center;padding:8px 16px 32
 ${section('子ども医療費の助成', `<p>${mny(esc(m.iryo))}</p>`)}
 ${section('学校給食費', `<p>${mny(esc(m.kyushoku))}</p>`)}
 ${section('保育・幼稚園', [
-  m.hoiku != null ? `<div class="krow"><span class="k">待機児童</span><span>保育所 <b class="m">${m.hoiku}人</b>${m.gakudo != null ? `／学童クラブ <b class="m">${m.gakudo}人</b>` : ''}</span></div>` : '',
+  m.hoiku != null ? `<div class="krow"><span class="k">待機児童</span><span>保育所 <b class="m">${m.hoiku}人</b>${m.gakudo != null ? `／学童クラブ <b class="m">${m.gakudo}人</b>` : m.gakudoNone ? '／学童クラブ 実施なし' : ''}</span></div>` : '',
   m.hoikuMusho && MUSHO_LABEL[m.hoikuMusho] ? `<div class="krow"><span class="k">保育料</span><span>${MUSHO_LABEL[m.hoikuMusho]}</span></div>` : '',
   m.ninsho ? `<div class="krow"><span class="k">認可外</span><span>${mny(esc(m.ninsho))}</span></div>` : '',
   m.yochien ? `<div class="krow"><span class="k">幼稚園</span><span>${mny(esc(m.yochien))}</span></div>` : '',
