@@ -1,0 +1,30 @@
+version: 2
+updates:
+  # 通常の更新は週1回にまとめる。メジャー更新はグループに入れず個別のPRにする。
+  # 脆弱性の修正（security updates）はグループに入れず、その都度個別のPRになる。
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+    labels: ["dependencies"]
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Asia/Tokyo"
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        update-types: ["minor", "patch"]
+    labels: ["dependencies"]
